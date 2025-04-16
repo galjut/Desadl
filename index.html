@@ -1,0 +1,127 @@
+# Menyusun HTML akhir sesuai permintaan user:
+# - Warna biru putih
+# - 2 tampilan: input data (nama GT, world, jumlah, no hp) & pembayaran
+# - Logo di atas
+# - Bukti transfer wajib
+# - Kalkulator otomatis untuk pembeli
+# - Notifikasi CallMeBot (API Key: 5579908)
+# - No HP hanya angka
+# - Dark/Light Mode toggle
+
+html_content = """
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>DesaDL Official</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body.light-mode { background-color: white; color: #000; }
+        body.dark-mode { background-color: #121212; color: #fff; }
+        body { font-family: Arial, sans-serif; padding: 20px; transition: 0.3s; }
+        .container { max-width: 600px; margin: auto; }
+        h1 { text-align: center; color: #3498db; }
+        .logo { display: block; margin: 10px auto; width: 120px; }
+        input, select, button, textarea {
+            width: 100%; padding: 10px; margin: 8px 0;
+            border-radius: 5px; border: 1px solid #ccc;
+        }
+        .hidden { display: none; }
+        .mode-toggle { float: right; margin-top: -40px; }
+        .btn { background-color: #3498db; color: white; border: none; cursor: pointer; }
+        .btn:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body class="light-mode">
+    <div class="container">
+        <img src="https://i.imgur.com/NTz9kQD.png" alt="Logo DesaDL" class="logo">
+        <button onclick="toggleMode()" class="mode-toggle">Toggle Dark/Light Mode</button>
+        <h1>DesaDL Official</h1>
+        <div id="form1">
+            <label>Nama Growtopia</label>
+            <input type="text" id="namaGT" required>
+            <label>World Growtopia</label>
+            <input type="text" id="worldGT" required>
+            <label>Jumlah DL</label>
+            <input type="number" id="jumlahDL" required oninput="hitungHarga()">
+            <label>No HP</label>
+            <input type="tel" id="noHP" pattern="[0-9]+" required>
+            <p>Total Bayar: <span id="totalHarga">0</span></p>
+            <button class="btn" onclick="lanjut()">Lanjut Pembayaran</button>
+        </div>
+
+        <div id="form2" class="hidden">
+            <h3>Pilih Metode Pembayaran</h3>
+            <select id="metodeBayar">
+                <option value="">Pilih</option>
+                <option value="DANA - 083821103983">DANA</option>
+                <option value="Gopay - 085232443263">Gopay</option>
+                <option value="Mandiri - 1060018413875">Mandiri</option>
+                <option value="BRI - 005101268017503">BRI</option>
+                <option value="SeaBank - 901546407976">SeaBank</option>
+            </select>
+            <label>Upload Bukti Transfer</label>
+            <input type="file" id="buktiTF" required>
+            <label>Catatan Tambahan</label>
+            <textarea id="catatan"></textarea>
+            <button class="btn" onclick="kirimWA()">Kirim Pesanan</button>
+        </div>
+    </div>
+
+    <script>
+        let hargaDL = 2600;
+        function toggleMode() {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        }
+
+        function hitungHarga() {
+            let jumlah = document.getElementById("jumlahDL").value;
+            let total = jumlah * hargaDL;
+            document.getElementById("totalHarga").innerText = total.toLocaleString("id-ID");
+        }
+
+        function lanjut() {
+            const nama = document.getElementById("namaGT").value.trim();
+            const world = document.getElementById("worldGT").value.trim();
+            const jumlah = document.getElementById("jumlahDL").value;
+            const noHP = document.getElementById("noHP").value.trim();
+
+            if (!nama || !world || !jumlah || !noHP.match(/^[0-9]+$/)) {
+                alert("Semua kolom harus diisi dengan benar.");
+                return;
+            }
+
+            document.getElementById("form1").classList.add("hidden");
+            document.getElementById("form2").classList.remove("hidden");
+        }
+
+        function kirimWA() {
+            const nama = document.getElementById("namaGT").value;
+            const world = document.getElementById("worldGT").value;
+            const jumlah = document.getElementById("jumlahDL").value;
+            const total = jumlah * hargaDL;
+            const noHP = document.getElementById("noHP").value;
+            const metode = document.getElementById("metodeBayar").value;
+            const catatan = document.getElementById("catatan").value;
+
+            if (!document.getElementById("buktiTF").files.length) {
+                alert("Upload bukti transfer dulu!");
+                return;
+            }
+
+            let pesan = `Pesanan Baru dari Website%nNama: ${nama}%nWorld: ${world}%nJumlah DL: ${jumlah}%nTotal: Rp ${total.toLocaleString()}%nNo HP: ${noHP}%nMetode: ${metode}%nCatatan: ${catatan}`;
+            let url = `https://api.callmebot.com/whatsapp.php?phone=+6285232443263&text=${encodeURIComponent(pesan)}&apikey=5579908`;
+
+            window.open(url, '_blank');
+            alert("Pesanan dikirim via WhatsApp!");
+        }
+    </script>
+</body>
+</html>
+"""
+
+with open("/mnt/data/index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+"/mnt/data/index.html"
