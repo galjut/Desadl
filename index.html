@@ -2,104 +2,98 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>DesaDL Transaksi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaksi Diamond Lock</title>
   <style>
     body {
+      background-color: #121212;
+      color: #fff;
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #f2f2f2;
-      color: #333;
     }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-    }
-    input, select, button {
+    label, input, select, button, textarea {
+      display: block;
       width: 100%;
-      margin-top: 10px;
+      margin-bottom: 15px;
       padding: 10px;
-      font-size: 14px;
+      border-radius: 5px;
+      border: none;
     }
-    #rekeningInfo {
-      margin-top: 10px;
-      color: #007bff;
-      font-weight: bold;
-      opacity: 0;
-      transform: translateY(-5px);
-      transition: all 0.3s ease;
+    input, select, textarea {
+      background-color: #1f1f1f;
+      color: #fff;
     }
-    #rekeningInfo.show {
-      opacity: 1;
-      transform: translateY(0);
+    button {
+      background-color: #2196F3;
+      color: #fff;
+      cursor: pointer;
     }
-    #prosesPesan {
+    button:disabled {
+      background-color: #555;
+    }
+    .loader {
+      margin: 10px auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4CAF50;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #loadingAnim {
       display: none;
       text-align: center;
-      margin-top: 20px;
-      color: green;
-      font-weight: bold;
-      animation: fade 1s ease-in-out infinite alternate;
-    }
-    @keyframes fade {
-      from {opacity: 0.6;}
-      to {opacity: 1;}
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Transaksi Diamond Lock (DL)</h2>
+  <h2>Transaksi Diamond Lock (DL)</h2>
 
-    <label>Tipe Transaksi:</label>
-    <select id="tipe" onchange="hitungTotal()">
-      <option value="">Pilih</option>
-      <option value="beli">Beli dari Admin</option>
-      <option value="jual">Jual ke Admin</option>
-    </select>
+  <label for="tipe">Tipe Transaksi:</label>
+  <select id="tipe">
+    <option value="">-- Pilih Tipe --</option>
+    <option value="Beli">Beli dari Admin</option>
+    <option value="Jual">Jual ke Admin</option>
+  </select>
 
-    <label>Jumlah DL:</label>
-    <input type="number" id="jumlah" oninput="hitungTotal()">
+  <label for="jumlah">Jumlah DL:</label>
+  <input type="number" id="jumlah" min="1" placeholder="Masukkan jumlah DL">
 
-    <label>GrowID:</label>
-    <input type="text" id="growid">
+  <label for="growid">Nama Growtopia:</label>
+  <input type="text" id="growid" placeholder="Contoh: GrowIDkamu">
 
-    <label>World:</label>
-    <input type="text" id="world">
+  <label for="world">Nama World:</label>
+  <input type="text" id="world" placeholder="Contoh: NamaWorld">
 
-    <label>Metode Pembayaran:</label>
-    <select id="metode" onchange="tampilkanRek()">
-      <option value="">Pilih Metode</option>
-      <option value="Dana">Dana</option>
-      <option value="Gopay">Gopay</option>
-      <option value="Seabank">Seabank</option>
-      <option value="Mandiri">Mandiri</option>
-      <option value="BRImo">BRImo</option>
-    </select>
+  <label for="metode">Metode Pembayaran:</label>
+  <select id="metode" onchange="tampilkanRek()">
+    <option value="">-- Pilih Metode --</option>
+    <option value="Dana">Dana</option>
+    <option value="Gopay">Gopay</option>
+    <option value="Seabank">Seabank</option>
+    <option value="Mandiri">Mandiri</option>
+    <option value="BRImo">BRImo</option>
+  </select>
 
-    <div id="rekeningInfo"></div>
+  <div id="rekeningInfo" style="font-weight:bold; margin-bottom:10px;"></div>
 
-    <label>No WhatsApp:</label>
-    <input type="text" id="nowa">
+  <label for="nowa">Nomor WhatsApp:</label>
+  <input type="text" id="nowa" placeholder="Contoh: 6281234567890">
 
-    <label>Link Bukti Transfer (WA):</label>
-    <input type="text" id="bukti">
+  <label for="buktitf">Link Bukti Transfer:</label>
+  <textarea id="buktitf" placeholder="Tempel link gambar dari WhatsApp/Imgur/Drive" rows="2"></textarea>
 
-    <p>Total: <span id="totalHarga">0</span></p>
-
-    <button onclick="kirimPesan()">Kirim Pesanan</button>
-
-    <div id="prosesPesan">Pesanan sedang dicek dan diproses...</div>
+  <button onclick="kirimPesan()">Kirim Pesanan</button>
+  <div id="loadingAnim">
+    <span>Pesanan sedang dicek dan diproses...</span>
+    <div class="loader"></div>
   </div>
 
   <script>
-    const harga = { beli: 2600, jual: 2450 };
     const rekening = {
       Dana: "083821103983",
       Gopay: "085232443263",
@@ -108,56 +102,43 @@
       BRImo: "0051 0126 8017 503"
     };
 
-    function hitungTotal() {
-      const tipe = document.getElementById('tipe').value;
-      const jumlah = parseInt(document.getElementById('jumlah').value);
-      const total = (!tipe || !jumlah) ? 0 : jumlah * harga[tipe];
-      document.getElementById('totalHarga').innerText = total;
-    }
-
     function tampilkanRek() {
       const metode = document.getElementById("metode").value;
-      const info = rekening[metode] ? `No Rekening (${metode}): ${rekening[metode]}` : "";
-      const rekeningInfo = document.getElementById("rekeningInfo");
-      rekeningInfo.classList.remove("show");
-      rekeningInfo.innerText = info;
-      if (info) setTimeout(() => rekeningInfo.classList.add("show"), 50);
+      document.getElementById("rekeningInfo").innerText = metode ? `No Rekening: ${rekening[metode]}` : "";
     }
 
     function kirimPesan() {
-      const tipe = document.getElementById('tipe').value;
-      const jumlah = document.getElementById('jumlah').value;
-      const growid = document.getElementById('growid').value;
-      const world = document.getElementById('world').value;
-      const metode = document.getElementById('metode').value;
-      const nowa = document.getElementById('nowa').value;
-      const bukti = document.getElementById('bukti').value;
+      const tipe = document.getElementById("tipe").value;
+      const jumlah = document.getElementById("jumlah").value;
+      const growid = document.getElementById("growid").value;
+      const world = document.getElementById("world").value;
+      const metode = document.getElementById("metode").value;
+      const nowa = document.getElementById("nowa").value;
+      const buktitf = document.getElementById("buktitf").value;
 
-      if (!tipe || !jumlah || !growid || !world || !metode || !nowa || !bukti) {
-        return alert("Semua data wajib diisi termasuk bukti transfer!");
+      if (!tipe || !jumlah || !growid || !world || !metode || !nowa || !buktitf) {
+        alert("Semua data wajib diisi termasuk link bukti transfer!");
+        return;
       }
 
       if (!/^[0-9]+$/.test(nowa)) {
-        return alert("No WA hanya boleh angka!");
+        alert("No WA hanya boleh angka!");
+        return;
       }
 
-      document.getElementById("prosesPesan").style.display = "block";
+      document.getElementById("loadingAnim").style.display = "block";
 
-      const total = jumlah * harga[tipe];
-      const pesan = `Halo Admin, saya ingin *${tipe} DL*\nJumlah: ${jumlah}\nGrowID: ${growid}\nWorld: ${world}\nMetode: ${metode}\nTotal: ${total}\n\nLink Bukti Transfer:\n${bukti}`;
-      const encoded = encodeURIComponent(pesan);
+      const pesan = `Tipe: ${tipe}%0AJumlah DL: ${jumlah}%0AGrowID: ${growid}%0AWorld: ${world}%0AMetode: ${metode}%0ARekening: ${rekening[metode]}%0ANo WA: ${nowa}%0ABukti TF: ${buktitf}`;
+      const token = 5579908
+      const url = `https://api.callmebot.com/whatsapp.php?phone=+6285232443263&text=${pesan}&apikey=${token}`;
 
-      fetch(`https://api.callmebot.com/whatsapp.php?phone=+62${nowa}&text=${encoded}&apikey=5579908`)
+      fetch(url)
         .then(res => {
-          if (res.ok) {
-            alert("Pesanan berhasil dikirim!");
-          } else {
-            throw new Error();
-          }
+          if (res.ok) alert("Pesanan berhasil dikirim ke admin!");
+          else alert("Gagal mengirim pesan ke admin.");
         })
-        .catch(() => {
-          alert("Gagal mengirim pesan ke admin.");
-        });
+        .catch(() => alert("Terjadi kesalahan saat mengirim pesan."))
+        .finally(() => document.getElementById("loadingAnim").style.display = "none");
     }
   </script>
 </body>
