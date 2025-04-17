@@ -5,26 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DesaDL.Official</title>
   <style>
+    :root {
+      --bg: #ffffff;
+      --text: #222;
+      --box: #f0f0f0;
+    }
+    [data-theme='dark'] {
+      --bg: #121212;
+      --text: #fff;
+      --box: #1f1f1f;
+    }
     body {
       font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
       margin: 0; padding: 0;
-      background-color: #f9f9f9;
-      color: #222;
+      transition: background 0.3s, color 0.3s;
     }
     .container {
       max-width: 500px;
-      margin: 50px auto;
+      margin: 30px auto;
       padding: 20px;
-      background: white;
+      background: var(--box);
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(0,0,0,0.1);
       text-align: center;
     }
     .logo {
-      max-width: 130px;
-      margin-bottom: 15px;
+      max-width: 150px;
+      margin-bottom: 10px;
       border-radius: 10px;
-      animation: fadeIn 1s ease;
+      animation: fadeIn 0.8s ease;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.95); }
@@ -36,6 +47,8 @@
       margin-top: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
+      background: var(--bg);
+      color: var(--text);
     }
     button {
       width: 100%;
@@ -47,15 +60,22 @@
       border-radius: 6px;
       font-size: 16px;
     }
-    .info, .harga, .notif {
+    .harga, .info, .notif {
       margin-top: 15px;
       font-weight: bold;
+    }
+    .toggle-theme {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <div class="toggle-theme" onclick="toggleTheme()">🌓</div>
   <div class="container">
-    <img src="data:image/jpeg;base64,PASTE_BASE64_LOGO_DI_SINI" alt="Logo DesaDL" class="logo" />
+    <img src="data:image/jpeg;base64,{{LOGO_BASE64}}" alt="Logo DesaDL" class="logo" />
     <h1>DesaDL.Official</h1>
 
     <label>Tipe Transaksi:</label>
@@ -66,7 +86,7 @@
     </select>
 
     <label>Jumlah DL:</label>
-    <input type="number" id="jumlah" placeholder="Contoh: 10" oninput="hitungTotal()">
+    <input type="number" id="jumlah" oninput="hitungTotal()">
 
     <div class="harga" id="totalHarga"></div>
 
@@ -78,6 +98,9 @@
 
     <label>Nama Pemesan:</label>
     <input type="text" id="nama">
+
+    <label>No WhatsApp Pembeli:</label>
+    <input type="number" id="nowa" placeholder="Contoh: 6281234567890">
 
     <label>Metode Pembayaran:</label>
     <select id="metode" onchange="tampilkanRek()">
@@ -95,7 +118,6 @@
     <input type="file" id="bukti">
 
     <button onclick="kirimPesan()">Kirim Pesanan</button>
-
     <div class="notif" id="notifikasi"></div>
   </div>
 
@@ -129,13 +151,18 @@
       const growid = document.getElementById('growid').value;
       const world = document.getElementById('world').value;
       const metode = document.getElementById('metode').value;
+      const nowa = document.getElementById('nowa').value;
 
-      if (!nama || !tipe || !jumlah || !growid || !world || !metode) {
+      if (!nama || !tipe || !jumlah || !growid || !world || !metode || !nowa) {
         return alert("Semua data wajib diisi!");
       }
 
+      if (!/^[0-9]+$/.test(nowa)) {
+        return alert("No WA hanya boleh angka!");
+      }
+
       const total = jumlah * harga[tipe];
-      const pesan = `Halo Admin,%0ANama: ${nama}%0ATransaksi: ${tipe.toUpperCase()}%0AJumlah: ${jumlah} DL%0AGrowID: ${growid}%0AWorld: ${world}%0APembayaran via: ${metode}%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
+      const pesan = `Halo Admin,%0ANama: ${nama}%0ATransaksi: ${tipe.toUpperCase()}%0AJumlah: ${jumlah} DL%0AGrowID: ${growid}%0AWorld: ${world}%0ANo WA Pembeli: ${nowa}%0APembayaran via: ${metode}%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
       const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=6285232443263&apikey=5579908&text=${pesan}`;
 
       fetch(apiUrl)
@@ -145,6 +172,17 @@
         .catch(() => {
           document.getElementById('notifikasi').innerText = "Gagal kirim WA. Coba lagi!";
         });
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme");
+      document.documentElement.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+    }
+
+    // Auto tema dark kalau jam malam
+    const jam = new Date().getHours();
+    if (jam >= 18 || jam <= 6) {
+      document.documentElement.setAttribute("data-theme", "dark");
     }
   </script>
 </body>
