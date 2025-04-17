@@ -2,144 +2,115 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transaksi Diamond Lock</title>
+  <title>WELCOME DesaDL</title>
   <style>
     body {
       background-color: #121212;
-      color: #fff;
+      color: #e0e0e0;
       font-family: Arial, sans-serif;
+      text-align: center;
       padding: 20px;
     }
-    label, input, select, button, textarea {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
+
+    input, select, button {
       padding: 10px;
+      margin: 10px;
       border-radius: 5px;
       border: none;
-    }
-    input, select, textarea {
+      width: 80%;
       background-color: #1f1f1f;
-      color: #fff;
+      color: white;
     }
+
     button {
-      background-color: #2196F3;
-      color: #fff;
+      background-color: #2196f3;
+      color: white;
       cursor: pointer;
     }
-    button:disabled {
-      background-color: #555;
-    }
-    .loader {
-      margin: 10px auto;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #4CAF50;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+
     #loadingAnim {
       display: none;
-      text-align: center;
+      color: lightgreen;
+      margin-top: 10px;
+    }
+
+    .peringatan {
+      color: orange;
+      font-size: 0.9em;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h2>Transaksi Diamond Lock (DL)</h2>
+  <h1>WELCOME DesaDL</h1>
 
-  <label for="tipe">Tipe Transaksi:</label>
-  <select id="tipe">
-    <option value="">-- Pilih Tipe --</option>
-    <option value="Beli">Beli dari Admin</option>
-    <option value="Jual">Jual ke Admin</option>
-  </select>
+  <form id="orderForm">
+    <select id="tipe">
+      <option value="Beli dari Admin">Beli dari Admin</option>
+      <option value="Jual ke Admin">Jual ke Admin</option>
+    </select>
+    
+    <input type="number" id="jumlah" placeholder="Jumlah DL" required>
+    <input type="text" id="growid" placeholder="Nama Growtopia" required>
+    <input type="text" id="nowa" placeholder="Nomor WhatsApp (628xxx)" required>
+    
+    <input type="file" id="buktiTf" accept="image/*" required>
+    <button type="submit">Kirim Pesanan</button>
+  </form>
 
-  <label for="jumlah">Jumlah DL:</label>
-  <input type="number" id="jumlah" min="1" placeholder="Masukkan jumlah DL">
+  <div id="loadingAnim">Pesanan sedang dicek dan diproses...</div>
 
-  <label for="growid">Nama Growtopia:</label>
-  <input type="text" id="growid" placeholder="Contoh: GrowIDkamu">
-
-  <label for="world">Nama World:</label>
-  <input type="text" id="world" placeholder="Contoh: NamaWorld">
-
-  <label for="metode">Metode Pembayaran:</label>
-  <select id="metode" onchange="tampilkanRek()">
-    <option value="">-- Pilih Metode --</option>
-    <option value="Dana">Dana</option>
-    <option value="Gopay">Gopay</option>
-    <option value="Seabank">Seabank</option>
-    <option value="Mandiri">Mandiri</option>
-    <option value="BRImo">BRImo</option>
-  </select>
-
-  <div id="rekeningInfo" style="font-weight:bold; margin-bottom:10px;"></div>
-
-  <label for="nowa">Nomor WhatsApp:</label>
-  <input type="text" id="nowa" placeholder="Contoh: 6281234567890">
-
-  <label for="buktitf">Link Bukti Transfer:</label>
-  <textarea id="buktitf" placeholder="Tempel link gambar dari WhatsApp/Imgur/Drive" rows="2"></textarea>
-
-  <button onclick="kirimPesan()">Kirim Pesanan</button>
-  <div id="loadingAnim">
-    <span>Pesanan sedang dicek dan diproses...</span>
-    <div class="loader"></div>
+  <div class="peringatan">
+    Setelah mengisi form, harap kirim screenshot dan bukti transfer ke admin melalui WhatsApp.
   </div>
 
   <script>
-    const rekening = {
-      Dana: "083821103983",
-      Gopay: "085232443263",
-      Seabank: "901546407976",
-      Mandiri: "1060018413875",
-      BRImo: "0051 0126 8017 503"
-    };
+    const form = document.getElementById("orderForm");
 
-    function tampilkanRek() {
-      const metode = document.getElementById("metode").value;
-      document.getElementById("rekeningInfo").innerText = metode ? `No Rekening: ${rekening[metode]}` : "";
-    }
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
 
-    function kirimPesan() {
       const tipe = document.getElementById("tipe").value;
       const jumlah = document.getElementById("jumlah").value;
       const growid = document.getElementById("growid").value;
-      const world = document.getElementById("world").value;
-      const metode = document.getElementById("metode").value;
       const nowa = document.getElementById("nowa").value;
-      const buktitf = document.getElementById("buktitf").value;
+      const bukti = document.getElementById("buktiTf").files[0];
 
-      if (!tipe || !jumlah || !growid || !world || !metode || !nowa || !buktitf) {
-        alert("Semua data wajib diisi termasuk link bukti transfer!");
+      if (!bukti) {
+        alert("Bukti transfer wajib diupload!");
         return;
       }
 
-      if (!/^[0-9]+$/.test(nowa)) {
-        alert("No WA hanya boleh angka!");
+      if (!/^\d+$/.test(nowa)) {
+        alert("Nomor WA hanya boleh angka!");
         return;
       }
 
       document.getElementById("loadingAnim").style.display = "block";
 
-      const pesan = `Tipe: ${tipe}%0AJumlah DL: ${jumlah}%0AGrowID: ${growid}%0AWorld: ${world}%0AMetode: ${metode}%0ARekening: ${rekening[metode]}%0ANo WA: ${nowa}%0ABukti TF: ${buktitf}`;
-      const token = 5579908
-      const url = `https://api.callmebot.com/whatsapp.php?phone=+6285232443263&text=${pesan}&apikey=${token}`;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const imageBase64 = reader.result;
 
-      fetch(url)
-        .then(res => {
-          if (res.ok) alert("Pesanan berhasil dikirim ke admin!");
-          else alert("Gagal mengirim pesan ke admin.");
-        })
-        .catch(() => alert("Terjadi kesalahan saat mengirim pesan."))
-        .finally(() => document.getElementById("loadingAnim").style.display = "none");
-    }
+        const pesan = `Tipe: ${tipe}%0AJumlah DL: ${jumlah}%0AGrowID: ${growid}%0ANo WA: ${nowa}`;
+        const apikey = "5579908;
+        const phone = "6285232443263";
+
+        try {
+          const response = await fetch(`https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encodeURIComponent(pesan)}&apikey=${apikey}`);
+          if (response.ok) {
+            alert("Pesanan berhasil dikirim ke admin. Jangan lupa kirim bukti TF ke WA Admin.");
+          } else {
+            alert("Sabar ya lagi di proses🥰.");
+          }
+        } catch (error) {
+          alert("Terjadi kesalahan saat mengirim pesan.");
+        }
+
+        document.getElementById("loadingAnim").style.display = "none";
+      };
+      reader.readAsDataURL(bukti);
+    });
   </script>
 </body>
 </html>
