@@ -2,80 +2,113 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WELCOME DesaDL</title>
   <style>
     body {
-      background-color: #111;
+      background-color: #121212;
       color: white;
       font-family: Arial, sans-serif;
-      text-align: center;
       padding: 20px;
+      text-align: center;
     }
     input, select, button {
       display: block;
-      margin: 10px auto;
-      padding: 10px;
       width: 90%;
       max-width: 400px;
-      border-radius: 8px;
+      margin: 10px auto;
+      padding: 10px;
+      border-radius: 5px;
       border: none;
     }
+    input, select {
+      background-color: #1e1e1e;
+      color: white;
+    }
     button {
-      background-color: #2196f3;
+      background-color: #2196F3;
       color: white;
       cursor: pointer;
     }
-    #totalHarga {
-      font-weight: bold;
-      color: #0f0;
-    }
-    #donasiText {
-      margin-top: 5px;
-      color: orange;
-    }
-    #loadingAnim {
+    .hidden {
       display: none;
+    }
+    #prosesAnim {
+      display: none;
+      color: orange;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+    #norekAdmin {
+      margin-top: 15px;
+      color: #0f0;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <h1>WELCOME DesaDL</h1>
 
+  <!-- Pilihan Jual atau Beli -->
   <select id="tipe" required>
     <option value="">-- Pilih Tipe --</option>
     <option value="Beli">Beli</option>
     <option value="Jual">Jual</option>
   </select>
 
+  <!-- Input jumlah DL -->
   <input type="number" id="jumlah" placeholder="Jumlah DL" required oninput="hitungTotal()">
   <p>Total Bayar: Rp <span id="totalHarga">0</span></p>
 
+  <!-- Input Growtopia ID -->
   <input type="text" id="growid" placeholder="Nama Growtopia" required>
-  <input type="text" id="world" placeholder="Nama World Growtopia" required oninput="tampilDonasi()">
-  <p id="donasiText"></p>
 
+  <!-- Pilih Opsi Pembayaran -->
+  <select id="opsiPembayaran" onchange="tampilNorek()" required>
+    <option value="">-- Pilih Opsi Pembayaran --</option>
+    <option value="BCA">Bank BCA</option>
+    <option value="Gopay">Gopay</option>
+    <option value="Dana">Dana</option>
+  </select>
+
+  <!-- Tampilkan Nomor Rekening -->
+  <div id="norekAdmin" class="hidden">
+    Nomor Rekening Admin: <span id="norekValue"></span>
+  </div>
+
+  <!-- Input Nomor WhatsApp -->
   <input type="text" id="nowa" placeholder="Nomor WhatsApp (628xxx)" required>
-  <input type="file" id="bukti" accept="image/*" required>
-
   <button onclick="kirimPesanan()">Kirim Pesanan</button>
-  <div id="loadingAnim">Mengirim...</div>
 
-  <p><strong>No Rekening Admin:</strong> BCA 123456789 a.n. DesaDL</p>
-  <p style="color: orange;">Setelah mengisi form, harap kirim screenshot dan bukti transfer ke admin melalui WhatsApp</p>
+  <!-- Animasi Sedang Diproses -->
+  <div id="prosesAnim">Pesanan sedang diproses...</div>
 
   <script>
+    const norek = {
+      BCA: "123456789 a.n. DesaDL",
+      Gopay: "085232443263",
+      Dana: "083821103983"
+    };
+
     function hitungTotal() {
       const jumlah = document.getElementById("jumlah").value;
-      const hargaPerDL = 2000;
+      const hargaPerDL = 2600; // Harga beli
       const total = jumlah * hargaPerDL;
       document.getElementById("totalHarga").textContent = total.toLocaleString();
     }
 
-    function tampilDonasi() {
-      const world = document.getElementById("world").value;
-      const text = world ? `Donations: @${world}` : "";
-      document.getElementById("donasiText").textContent = text;
+    function tampilNorek() {
+      const opsi = document.getElementById("opsiPembayaran").value;
+      const norekDiv = document.getElementById("norekAdmin");
+      const norekSpan = document.getElementById("norekValue");
+
+      if (opsi && norek[opsi]) {
+        norekDiv.classList.remove("hidden");
+        norekSpan.textContent = norek[opsi];
+      } else {
+        norekDiv.classList.add("hidden");
+        norekSpan.textContent = "";
+      }
     }
 
     function kirimPesanan() {
@@ -83,43 +116,15 @@
       const jumlah = document.getElementById("jumlah").value;
       const growid = document.getElementById("growid").value;
       const nowa = document.getElementById("nowa").value;
-      const bukti = document.getElementById("bukti").files[0];
-      const world = document.getElementById("world").value;
 
       if (!/^[0-9]+$/.test(nowa)) {
         alert("Nomor WA hanya boleh angka!");
         return;
       }
 
-      if (!bukti) {
-        alert("Bukti transfer wajib disertakan!");
-        return;
-      }
+      const anim = document.getElementById("prosesAnim");
+      anim.style.display = "block";
 
-      document.getElementById("loadingAnim").style.display = "block";
-
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        const gambarBase64 = reader.result.split(',')[1];
-        const pesan = `Tipe: ${tipe}%0AJumlah DL: ${jumlah}%0AGrowID: ${growid}%0AWorld: ${world}%0ADonations: @${world}`;
-        const apikey = "5579908"; // Ganti dengan API KEY CallMeBot milikmu
-        const url = `https://api.callmebot.com/whatsapp.php?phone=6285232443263&text=${pesan}&apikey=${apikey}`;
-
-        fetch(url).then(res => {
-          document.getElementById("loadingAnim").style.display = "none";
-          if (res.ok) {
-            alert("Pesanan berhasil dikirim ke admin.");
-          } else {
-            alert("Gagal mengirim pesan ke admin.");
-          }
-        }).catch(() => {
-          document.getElementById("loadingAnim").style.display = "none";
-          alert("Terjadi kesalahan saat mengirim pesan.");
-        });
-      };
-
-      reader.readAsDataURL(bukti);
-    }
-  </script>
-</body>
-</html>
+      setTimeout(() => {
+        anim.style.display = "none";
+        alert("Pesanan berhasil dikirim
