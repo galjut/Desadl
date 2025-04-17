@@ -1,147 +1,112 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DesaDL Official</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .dark-mode {
-            background-color: #121212;
-            color: #fff;
-        }
-        .container {
-            max-width: 400px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .dark-mode .container {
-            background-color: #1e1e1e;
-        }
-        h2 {
-            text-align: center;
-            color: #007bff;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        input[type="file"] {
-            padding: 3px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .toggle-mode {
-            text-align: center;
-            margin-top: 20px;
-        }
-        #logo {
-            display: block;
-            margin: 0 auto 10px;
-            max-width: 100px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesanan | DesaDL</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #222;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark {
+      background-color: #121212;
+      color: #eee;
+    }
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .dark .container {
+      background: #1e1e1e;
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      background: #007BFF;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-style: italic;
+      text-align: center;
+    }
+    .toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <img id="logo" src="https://i.ibb.co/8rMcdWy/logo-desa.png" alt="DesaDL Logo">
-        <h2>DesaDL Official</h2>
-        <div id="formInput">
-            <input type="text" id="namaGT" placeholder="Nama Growtopia" required>
-            <input type="text" id="worldGT" placeholder="World Growtopia" required>
-            <input type="number" id="jumlahDL" placeholder="Jumlah DL" required>
-            <input type="text" id="noHP" placeholder="No HP (hanya angka)" pattern="\d*" required>
-            <p>Total Bayar: <span id="totalBayar">0</span></p>
-            <button onclick="lanjutPembayaran()">Lanjut Pembayaran</button>
-        </div>
-        <div id="formBayar" style="display:none;">
-            <select id="metodePembayaran" required>
-                <option value="">Pilih Metode Pembayaran</option>
-                <option>DANA - 083821103983</option>
-                <option>GoPay - 085232443263</option>
-                <option>Mandiri - 1060018413875</option>
-                <option>BRImo - 0051 0126 8017 503</option>
-                <option>SeaBank - 901546407976</option>
-            </select>
-            <input type="file" id="buktiTransfer" accept="image/*" required>
-            <button onclick="kirimPesanan()">Kirim Pesanan</button>
-        </div>
-        <div class="toggle-mode">
-            <button onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
-        </div>
-    </div>
+  <div class="toggle" onclick="toggleDark()">🌙</div>
+  <div class="container">
+    <h1>DesaDL Official</h1>
+    <label>Nama Pemesan:</label>
+    <input type="text" id="nama">
 
-    <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
+    <label>Metode Pembayaran:</label>
+    <select id="pembayaran">
+      <option value="">Pilih Metode</option>
+      <option value="Dana">Dana</option>
+      <option value="Gopay">Gopay</option>
+      <option value="OVO">OVO</option>
+    </select>
 
-        document.getElementById('jumlahDL').addEventListener('input', function() {
-            const hargaPerDL = 2600;
-            const jumlah = parseInt(this.value) || 0;
-            document.getElementById('totalBayar').innerText = jumlah * hargaPerDL;
-        });
+    <label>Bukti Transfer (Upload):</label>
+    <input type="file" id="bukti">
 
-        function lanjutPembayaran() {
-            const nama = document.getElementById('namaGT').value;
-            const world = document.getElementById('worldGT').value;
-            const jumlah = document.getElementById('jumlahDL').value;
-            const noHP = document.getElementById('noHP').value;
+    <button onclick="kirimPesanan()">Kirim Pesanan</button>
 
-            if (!nama || !world || !jumlah || !noHP.match(/^\d+$/)) {
-                alert('Mohon isi semua data dengan benar!');
-                return;
-            }
+    <div id="result"></div>
+  </div>
 
-            document.getElementById('formInput').style.display = 'none';
-            document.getElementById('formBayar').style.display = 'block';
-        }
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle("dark");
+      document.querySelector('.toggle').textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    }
 
-        function kirimPesanan() {
-            const nama = document.getElementById('namaGT').value;
-            const world = document.getElementById('worldGT').value;
-            const jumlah = document.getElementById('jumlahDL').value;
-            const noHP = document.getElementById('noHP').value;
-            const metode = document.getElementById('metodePembayaran').value;
-            const bukti = document.getElementById('buktiTransfer').files[0];
+    function kirimPesanan() {
+      const nama = document.getElementById('nama').value;
+      const metode = document.getElementById('pembayaran').value;
+      const bukti = document.getElementById('bukti').files.length;
 
-            if (!metode || !bukti) {
-                alert("Metode pembayaran & bukti transfer wajib diisi!");
-                return;
-            }
+      if (!nama || !metode || !bukti) {
+        alert("Nama, metode pembayaran & bukti transfer wajib diisi!");
+        return;
+      }
 
-            const total = jumlah * 2600;
-            const pesan = `PESANAN BARU DESADL%0ANama GT: ${nama}%0AWorld: ${world}%0AJumlah DL: ${jumlah}%0ATotal Bayar: ${total}%0AHP: ${noHP}%0AMetode: ${metode}`;
-            const url = `https://api.callmebot.com/whatsapp.php?phone=${noHP}&text=${pesan}&apikey=5579908`;
-
-            window.open(url, '_blank');
-            alert("Pesanan dikirim via WhatsApp!");
-        }
-    </script>
+      document.getElementById('result').innerText = "Pesanan kamu sedang dicek, mohon tunggu 5 menit...";
+    }
+  </script>
 </body>
 </html>
