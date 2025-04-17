@@ -1,159 +1,109 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>DesaDL.Official</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    :root {
-      --bg: #ffffff;
-      --text: #222;
-      --box: #f0f0f0;
-    }
-    [data-theme='dark'] {
-      --bg: #121212;
-      --text: #fff;
-      --box: #1f1f1f;
-    }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0; padding: 0;
-      transition: background 0.3s, color 0.3s;
-    }
-    .container {
-      max-width: 500px;
-      margin: 30px auto;
+      font-family: sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
       padding: 20px;
-      background: var(--box);
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
       text-align: center;
     }
-    .logo {
-      max-width: 150px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      animation: fadeIn 0.8s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+    .container {
+      background: #1e1e2f;
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: var(--bg);
-      color: var(--text);
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 20px;
-      background: #007BFF;
+      padding: 10px 20px;
+      background: #007bff;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-    .harga, .info, .notif {
-      margin-top: 15px;
+      border-radius: 10px;
+      cursor: pointer;
       font-weight: bold;
     }
-    .toggle-theme {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      cursor: pointer;
+    img.logo {
+      width: 120px;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
-  <div class="toggle-theme" onclick="toggleTheme()">🌓</div>
-  <div class="container">
-    <img src="data:image/jpeg;base64,{{LOGO_BASE64}}" alt="Logo DesaDL" class="logo" />
-    <h1>DesaDL.Official</h1>
 
-    <label>Tipe Transaksi:</label>
+  <div class="container">
+    <img src="https://raw.githubusercontent.com/galjut/DesaDL/main/assets/desadl-logo.jpg" alt="DesaDL Logo" class="logo">
+    <h2>Transaksi Diamond Lock (DL)</h2>
+
     <select id="tipe" onchange="hitungTotal()">
-      <option value="">Pilih</option>
-      <option value="beli">Beli dari Admin (Rp 2.600)</option>
-      <option value="jual">Jual ke Admin (Rp 2.450)</option>
+      <option value="">Pilih Transaksi</option>
+      <option value="beli">Beli (Rp 2.600)</option>
+      <option value="jual">Jual (Rp 2.450)</option>
     </select>
 
-    <label>Jumlah DL:</label>
-    <input type="number" id="jumlah" oninput="hitungTotal()">
+    <input type="number" id="jumlah" placeholder="Jumlah DL" oninput="hitungTotal()">
+    <p>Total Bayar: <span id="totalHarga">-</span></p>
 
-    <div class="harga" id="totalHarga"></div>
-
-    <label>Nama Growtopia:</label>
-    <input type="text" id="growid">
-
-    <label>Nama World:</label>
-    <input type="text" id="world">
-
-    <label>Nama Pemesan:</label>
-    <input type="text" id="nama">
-
-    <label>No WhatsApp Pembeli:</label>
-    <input type="number" id="nowa" placeholder="Contoh: 6281234567890">
-
-    <label>Metode Pembayaran:</label>
-    <select id="metode" onchange="tampilkanRek()">
-      <option value="">Pilih</option>
+    <input type="text" id="growid" placeholder="Nama Growtopia">
+    <input type="text" id="world" placeholder="Nama World">
+    <select id="metode">
+      <option value="">Pilih Pembayaran</option>
       <option value="Dana">Dana</option>
       <option value="Gopay">Gopay</option>
       <option value="Seabank">Seabank</option>
-      <option value="Mandiri">Bank Mandiri</option>
-      <option value="BRImo">Bank BRImo</option>
+      <option value="Mandiri">Mandiri</option>
+      <option value="BRImo">BRImo</option>
     </select>
 
-    <div class="info" id="rekeningInfo"></div>
-
-    <label>Upload Bukti Transfer:</label>
-    <input type="file" id="bukti">
-
+    <input type="text" id="nowa" placeholder="No WhatsApp (angka saja)">
     <button onclick="kirimPesan()">Kirim Pesanan</button>
-    <div class="notif" id="notifikasi"></div>
+
+    <div id="loading" style="display:none; margin-top:15px;">
+      <img src="https://i.gifer.com/YCZH.gif" width="50">
+      <p>Pesanan sedang diproses...</p>
+    </div>
+    <div id="notifikasi" style="margin-top:10px;"></div>
   </div>
 
   <script>
-    const harga = { beli: 2600, jual: 2450 };
-    const rekening = {
-      Dana: "083821103983",
-      Gopay: "085232443263",
-      Seabank: "901546407976",
-      Mandiri: "1060018413875",
-      BRImo: "0051 0126 8017 503"
+    const harga = {
+      beli: 2600,
+      jual: 2450
     };
 
     function hitungTotal() {
       const tipe = document.getElementById('tipe').value;
       const jumlah = parseInt(document.getElementById('jumlah').value);
-      if (!tipe || !jumlah) return document.getElementById('totalHarga').innerText = "";
+      if (!tipe || !jumlah) {
+        document.getElementById('totalHarga').innerText = '-';
+        return;
+      }
       const total = jumlah * harga[tipe];
-      document.getElementById('totalHarga').innerText = `Total: Rp ${total.toLocaleString('id-ID')}`;
-    }
-
-    function tampilkanRek() {
-      const metode = document.getElementById('metode').value;
-      document.getElementById('rekeningInfo').innerText = metode ? `No: ${rekening[metode]}` : "";
+      document.getElementById('totalHarga').innerText = 'Rp ' + total.toLocaleString('id-ID');
     }
 
     function kirimPesan() {
-      const nama = document.getElementById('nama').value;
       const tipe = document.getElementById('tipe').value;
-      const jumlah = document.getElementById('jumlah').value;
+      const jumlah = parseInt(document.getElementById('jumlah').value);
       const growid = document.getElementById('growid').value;
       const world = document.getElementById('world').value;
       const metode = document.getElementById('metode').value;
       const nowa = document.getElementById('nowa').value;
 
-      if (!nama || !tipe || !jumlah || !growid || !world || !metode || !nowa) {
+      if (!tipe || !jumlah || !growid || !world || !metode || !nowa) {
         return alert("Semua data wajib diisi!");
       }
 
@@ -162,28 +112,24 @@
       }
 
       const total = jumlah * harga[tipe];
-      const pesan = `Halo Admin,%0ANama: ${nama}%0ATransaksi: ${tipe.toUpperCase()}%0AJumlah: ${jumlah} DL%0AGrowID: ${growid}%0AWorld: ${world}%0ANo WA Pembeli: ${nowa}%0APembayaran via: ${metode}%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
+      const pesan = `Halo Admin,%0ATransaksi: ${tipe.toUpperCase()}%0AJumlah: ${jumlah} DL%0AGrowID: ${growid}%0AWorld: ${world}%0APembayaran: ${metode}%0ANo WA: ${nowa}%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
+
       const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=6285232443263&apikey=5579908&text=${pesan}`;
+
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("notifikasi").innerText = "";
 
       fetch(apiUrl)
         .then(() => {
-          document.getElementById('notifikasi').innerText = "Pesanan terkirim via WhatsApp!";
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("notifikasi").innerText = "Pesanan berhasil dikirim ke WhatsApp Admin!";
         })
         .catch(() => {
-          document.getElementById('notifikasi').innerText = "Gagal kirim WA. Coba lagi!";
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("notifikasi").innerText = "Gagal mengirim pesan ke WhatsApp.";
         });
     }
-
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute("data-theme");
-      document.documentElement.setAttribute("data-theme", current === "dark" ? "light" : "dark");
-    }
-
-    // Auto tema dark kalau jam malam
-    const jam = new Date().getHours();
-    if (jam >= 18 || jam <= 6) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
   </script>
+
 </body>
 </html>
