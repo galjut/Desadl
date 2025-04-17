@@ -2,85 +2,124 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WELCOME DesaDL</title>
   <style>
     body {
-      background-color: #121212;
+      background-color: #111;
       color: white;
       font-family: Arial, sans-serif;
+      text-align: center;
       padding: 20px;
     }
-    input, button {
+    input, select, button {
       display: block;
-      width: 100%;
-      margin-bottom: 15px;
+      margin: 10px auto;
       padding: 10px;
-      border-radius: 5px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 8px;
       border: none;
     }
-    input {
-      background-color: #1e1e1e;
-      color: white;
-    }
     button {
-      background-color: #2196F3;
+      background-color: #2196f3;
       color: white;
       cursor: pointer;
     }
-    #peringatan {
+    #totalHarga {
+      font-weight: bold;
+      color: #0f0;
+    }
+    #donasiText {
+      margin-top: 5px;
       color: orange;
-      margin-top: 10px;
-      font-size: 14px;
+    }
+    #loadingAnim {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center;">WELCOME DesaDL</h2>
-  <form id="orderForm">
-    <input type="text" id="tipe" placeholder="Beli dari Admin" required>
-    <input type="number" id="jumlah" placeholder="Jumlah DL" required>
-    <input type="text" id="growid" placeholder="Nama Growtopia" required>
-    <input type="text" id="nowa" placeholder="Nomor WhatsApp (628xxx)" required>
-    <input type="file" id="bukti" accept="image/*" required>
-    <button type="submit">Kirim Pesanan</button>
-  </form>
-  <div id="peringatan">
-    Setelah mengisi form, harap kirim screenshot dan bukti transfer ke admin melalui WhatsApp.
-  </div>
+  <h1>WELCOME DesaDL</h1>
+
+  <select id="tipe" required>
+    <option value="">-- Pilih Tipe --</option>
+    <option value="Beli">Beli</option>
+    <option value="Jual">Jual</option>
+  </select>
+
+  <input type="number" id="jumlah" placeholder="Jumlah DL" required oninput="hitungTotal()">
+  <p>Total Bayar: Rp <span id="totalHarga">0</span></p>
+
+  <input type="text" id="growid" placeholder="Nama Growtopia" required>
+  <input type="text" id="world" placeholder="Nama World Growtopia" required oninput="tampilDonasi()">
+  <p id="donasiText"></p>
+
+  <input type="text" id="nowa" placeholder="Nomor WhatsApp (628xxx)" required>
+  <input type="file" id="bukti" accept="image/*" required>
+
+  <button onclick="kirimPesanan()">Kirim Pesanan</button>
+  <div id="loadingAnim">Mengirim...</div>
+
+  <p><strong>No Rekening Admin:</strong> BCA 123456789 a.n. DesaDL</p>
+  <p style="color: orange;">Setelah mengisi form, harap kirim screenshot dan bukti transfer ke admin melalui WhatsApp</p>
 
   <script>
-    const form = document.getElementById("orderForm");
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
+    function hitungTotal() {
+      const jumlah = document.getElementById("jumlah").value;
+      const hargaPerDL = 2000;
+      const total = jumlah * hargaPerDL;
+      document.getElementById("totalHarga").textContent = total.toLocaleString();
+    }
 
+    function tampilDonasi() {
+      const world = document.getElementById("world").value;
+      const text = world ? `Donations: @${world}` : "";
+      document.getElementById("donasiText").textContent = text;
+    }
+
+    function kirimPesanan() {
       const tipe = document.getElementById("tipe").value;
       const jumlah = document.getElementById("jumlah").value;
       const growid = document.getElementById("growid").value;
       const nowa = document.getElementById("nowa").value;
+      const bukti = document.getElementById("bukti").files[0];
+      const world = document.getElementById("world").value;
 
       if (!/^[0-9]+$/.test(nowa)) {
         alert("Nomor WA hanya boleh angka!");
         return;
       }
 
-      const message = `Tipe: ${tipe}%0AJumlah DL: ${jumlah}%0AGrowID: ${growid}%0ANo WA: ${nowa}%0A(Note: Bukti transfer sudah diupload via form)%0AHarap segera kirim screenshot dan bukti tf ke admin.`;
-
-      const apiKey = "5579908"; 
-      const phone = "6285232443263"; // nomor admin
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${message}&apikey=${apiKey}`;
-
-      try {
-        const res = await fetch(url);
-        if (res.ok) {
-          alert("Pesanan berhasil dikirim ke admin.");
-        } else {
-          alert("Pesanan berhasil dikirim ke admin.");
-        }
-      } catch (err) {
-        alert("Pesanan berhasil dikirim ke admin.");
+      if (!bukti) {
+        alert("Bukti transfer wajib disertakan!");
+        return;
       }
-    });
+
+      document.getElementById("loadingAnim").style.display = "block";
+
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        const gambarBase64 = reader.result.split(',')[1];
+        const pesan = `Tipe: ${tipe}%0AJumlah DL: ${jumlah}%0AGrowID: ${growid}%0AWorld: ${world}%0ADonations: @${world}`;
+        const apikey = "5579908"; // Ganti dengan API KEY CallMeBot milikmu
+        const url = `https://api.callmebot.com/whatsapp.php?phone=6285232443263&text=${pesan}&apikey=${apikey}`;
+
+        fetch(url).then(res => {
+          document.getElementById("loadingAnim").style.display = "none";
+          if (res.ok) {
+            alert("Pesanan berhasil dikirim ke admin.");
+          } else {
+            alert("Gagal mengirim pesan ke admin.");
+          }
+        }).catch(() => {
+          document.getElementById("loadingAnim").style.display = "none";
+          alert("Terjadi kesalahan saat mengirim pesan.");
+        });
+      };
+
+      reader.readAsDataURL(bukti);
+    }
   </script>
 </body>
 </html>
