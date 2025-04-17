@@ -3,103 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Transaksi DL | DesaDL</title>
+  <title>DesaDL.Official</title>
   <style>
-    @keyframes fadeInLogo {
-      0% { opacity: 0; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1); }
-    }
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0; padding: 0;
-      background-color: #f4f4f4;
+      background-color: #f9f9f9;
       color: #222;
-      transition: background 0.3s, color 0.3s;
     }
-    .dark { background-color: #121212; color: #eee; }
     .container {
       max-width: 500px;
       margin: 50px auto;
       padding: 20px;
+      background: white;
       border-radius: 12px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      position: relative;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      text-align: center;
     }
-    .dark .container { background: #1e1e1e; }
-    h1 { text-align: center; }
-    label { display: block; margin-top: 15px; }
+    .logo {
+      max-width: 130px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      animation: fadeIn 1s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
+      margin-top: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
     button {
-      margin-top: 20px;
-      padding: 10px;
       width: 100%;
-      border: none;
+      padding: 12px;
+      margin-top: 20px;
       background: #007BFF;
       color: white;
+      border: none;
       border-radius: 6px;
-      cursor: pointer;
+      font-size: 16px;
     }
-    button:hover { background: #0056b3; }
-    #result, #harga, #pembayaranInfo {
-      margin-top: 20px;
-      font-style: italic;
-      text-align: center;
-    }
-    .toggle {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      cursor: pointer;
-      font-size: 20px;
-    }
-    .logo {
-      display: block;
-      margin: 0 auto 20px;
-      max-width: 120px;
-      animation: fadeInLogo 1s ease-in-out;
-    }
-    .progress {
+    .info, .harga, .notif {
       margin-top: 15px;
-      width: 100%;
-      background: #ddd;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 10px;
-      width: 0;
-      background: #28a745;
-      animation: progressAnim 5s forwards;
-    }
-    @keyframes progressAnim {
-      to { width: 100%; }
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="toggle" onclick="toggleDark()">🌙</div>
   <div class="container">
-    <img src="https://i.ibb.co/Srzhch3/desadl-logo.png" alt="Logo DesaDL" class="logo">
-    <h1>Transaksi Diamond Lock (DL)</h1>
+    <img src="data:image/jpeg;base64,PASTE_BASE64_LOGO_DI_SINI" alt="Logo DesaDL" class="logo" />
+    <h1>DesaDL.Official</h1>
 
     <label>Tipe Transaksi:</label>
-    <select id="tipe" onchange="updateHarga()">
+    <select id="tipe" onchange="hitungTotal()">
       <option value="">Pilih</option>
-      <option value="jual">Jual DL ke User (Rp 2.450)</option>
-      <option value="beli">Beli DL dari User (Rp 2.600)</option>
+      <option value="beli">Beli dari Admin (Rp 2.600)</option>
+      <option value="jual">Jual ke Admin (Rp 2.450)</option>
     </select>
 
     <label>Jumlah DL:</label>
-    <input type="number" id="jumlah" oninput="updateHarga()">
+    <input type="number" id="jumlah" placeholder="Contoh: 10" oninput="hitungTotal()">
 
-    <div id="harga"></div>
+    <div class="harga" id="totalHarga"></div>
 
     <label>Nama Growtopia:</label>
     <input type="text" id="growid">
@@ -111,8 +80,8 @@
     <input type="text" id="nama">
 
     <label>Metode Pembayaran:</label>
-    <select id="pembayaran" onchange="updatePembayaranInfo()">
-      <option value="">Pilih Metode</option>
+    <select id="metode" onchange="tampilkanRek()">
+      <option value="">Pilih</option>
       <option value="Dana">Dana</option>
       <option value="Gopay">Gopay</option>
       <option value="Seabank">Seabank</option>
@@ -120,78 +89,62 @@
       <option value="BRImo">Bank BRImo</option>
     </select>
 
-    <div id="pembayaranInfo"></div>
+    <div class="info" id="rekeningInfo"></div>
 
-    <label>Bukti Transfer (Upload):</label>
+    <label>Upload Bukti Transfer:</label>
     <input type="file" id="bukti">
 
-    <button onclick="kirimPesanan()">Kirim Pesanan</button>
+    <button onclick="kirimPesan()">Kirim Pesanan</button>
 
-    <div id="result"></div>
-    <div class="progress" id="progress" style="display:none;">
-      <div class="progress-bar"></div>
-    </div>
+    <div class="notif" id="notifikasi"></div>
   </div>
 
   <script>
-    const nomorPembayaran = {
-      "Dana": "083821103983",
-      "Gopay": "085232443263",
-      "Seabank": "901546407976",
-      "Mandiri": "1060018413875",
-      "BRImo": "0051 0126 8017 503"
+    const harga = { beli: 2600, jual: 2450 };
+    const rekening = {
+      Dana: "083821103983",
+      Gopay: "085232443263",
+      Seabank: "901546407976",
+      Mandiri: "1060018413875",
+      BRImo: "0051 0126 8017 503"
     };
 
-    function toggleDark() {
-      document.body.classList.toggle("dark");
-      document.querySelector('.toggle').textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-    }
-
-    function updatePembayaranInfo() {
-      const metode = document.getElementById('pembayaran').value;
-      const info = nomorPembayaran[metode] || "";
-      document.getElementById('pembayaranInfo').innerText = info ? `Nomor pembayaran: ${info}` : "";
-    }
-
-    function updateHarga() {
+    function hitungTotal() {
       const tipe = document.getElementById('tipe').value;
       const jumlah = parseInt(document.getElementById('jumlah').value);
-      let harga = 0;
-
-      if (tipe === 'beli') harga = jumlah * 2600;
-      if (tipe === 'jual') harga = jumlah * 2450;
-
-      document.getElementById('harga').innerText = jumlah ? `Total: Rp ${harga.toLocaleString('id-ID')}` : "";
+      if (!tipe || !jumlah) return document.getElementById('totalHarga').innerText = "";
+      const total = jumlah * harga[tipe];
+      document.getElementById('totalHarga').innerText = `Total: Rp ${total.toLocaleString('id-ID')}`;
     }
 
-    function kirimPesanan() {
+    function tampilkanRek() {
+      const metode = document.getElementById('metode').value;
+      document.getElementById('rekeningInfo').innerText = metode ? `No: ${rekening[metode]}` : "";
+    }
+
+    function kirimPesan() {
       const nama = document.getElementById('nama').value;
-      const metode = document.getElementById('pembayaran').value;
-      const bukti = document.getElementById('bukti').files.length;
       const tipe = document.getElementById('tipe').value;
       const jumlah = document.getElementById('jumlah').value;
       const growid = document.getElementById('growid').value;
       const world = document.getElementById('world').value;
+      const metode = document.getElementById('metode').value;
 
-      if (!nama || !metode || !bukti || !tipe || !jumlah || !growid || !world) {
-        alert("Semua data wajib diisi!");
-        return;
+      if (!nama || !tipe || !jumlah || !growid || !world || !metode) {
+        return alert("Semua data wajib diisi!");
       }
 
-      const harga = tipe === 'beli' ? jumlah * 2600 : jumlah * 2450;
+      const total = jumlah * harga[tipe];
+      const pesan = `Halo Admin,%0ANama: ${nama}%0ATransaksi: ${tipe.toUpperCase()}%0AJumlah: ${jumlah} DL%0AGrowID: ${growid}%0AWorld: ${world}%0APembayaran via: ${metode}%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
+      const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=6285232443263&apikey=5579908&text=${pesan}`;
 
-      document.getElementById('result').innerText = "Pesanan kamu sedang dicek, mohon tunggu...";
-      document.getElementById('progress').style.display = 'block';
-
-      const pesan = `Halo admin,\\n\\nNama: ${nama}\\nTipe: ${tipe.toUpperCase()}\\nJumlah: ${jumlah} DL\\nGrowID: ${growid}\\nWorld: ${world}\\nPembayaran via: ${metode}\\nTotal: Rp ${harga.toLocaleString('id-ID')}`;
-
-      setTimeout(() => {
-        fetch(`https://api.callmebot.com/whatsapp.php?phone=6285232443263&apikey=5579908&text=${encodeURIComponent(pesan)}`)
-          .then(() => console.log("Notifikasi WA dikirim!"))
-          .catch(() => console.warn("Gagal kirim WA (simulasi)"));
-
-        document.getElementById('result').innerText = "Pembayaran dikonfirmasi. Pesanan segera dikirim!";
-      }, 5000);
+      fetch(apiUrl)
+        .then(() => {
+          document.getElementById('notifikasi').innerText = "Pesanan terkirim via WhatsApp!";
+        })
+        .catch(() => {
+          document.getElementById('notifikasi').innerText = "Gagal kirim WA. Coba lagi!";
+        });
     }
   </script>
 </body>
