@@ -3,64 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <title>DesaDL.Official</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
-      font-family: sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: #fff;
+      font-family: Arial, sans-serif;
       padding: 20px;
+      background: #f3f3f3;
+      color: #333;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    img.logo {
+      width: 150px;
+      display: block;
+      margin: auto;
+    }
+
+    h2 {
       text-align: center;
     }
-    .container {
-      background: #1e1e2f;
-      padding: 20px;
-      border-radius: 16px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+
+    label {
+      display: block;
+      margin-top: 15px;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
+      margin-top: 5px;
     }
+
     button {
-      padding: 10px 20px;
       background: #007bff;
       color: white;
       border: none;
-      border-radius: 10px;
+      padding: 10px;
+      margin-top: 20px;
+      width: 100%;
       cursor: pointer;
-      font-weight: bold;
+      font-size: 16px;
     }
-    img.logo {
-      width: 120px;
-      margin-bottom: 15px;
+
+    #rekeningInfo {
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    #rekeningInfo.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #prosesPesan {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: green;
+      animation: fadein 1s ease forwards;
+    }
+
+    @keyframes fadein {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <img src="https://raw.githubusercontent.com/galjut/DesaDL/main/assets/desadl-logo.jpg" alt="DesaDL Logo" class="logo">
+    <img src="https://i.ibb.co/4dFqz5p/1000391833.jpg" alt="DesaDL Logo" class="logo" />
     <h2>Transaksi Diamond Lock (DL)</h2>
 
+    <label>Tipe Transaksi:</label>
     <select id="tipe" onchange="hitungTotal()">
-      <option value="">Pilih Transaksi</option>
-      <option value="beli">Beli (Rp 2.600)</option>
-      <option value="jual">Jual (Rp 2.450)</option>
+      <option value="">Pilih</option>
+      <option value="beli">Beli dari Admin</option>
+      <option value="jual">Jual ke Admin</option>
     </select>
 
-    <input type="number" id="jumlah" placeholder="Jumlah DL" oninput="hitungTotal()">
-    <p>Total Bayar: <span id="totalHarga">-</span></p>
+    <label>Jumlah DL:</label>
+    <input type="number" id="jumlah" oninput="hitungTotal()" />
 
-    <input type="text" id="growid" placeholder="Nama Growtopia">
-    <input type="text" id="world" placeholder="Nama World">
-    <select id="metode">
-      <option value="">Pilih Pembayaran</option>
+    <label>Nama Growtopia:</label>
+    <input type="text" id="growid" />
+
+    <label>Nama World:</label>
+    <input type="text" id="world" />
+
+    <label>No WhatsApp:</label>
+    <input type="text" id="nowa" />
+
+    <label>Metode Pembayaran:</label>
+    <select id="metode" onchange="tampilkanRek()">
+      <option value="">Pilih Metode</option>
       <option value="Dana">Dana</option>
       <option value="Gopay">Gopay</option>
       <option value="Seabank">Seabank</option>
@@ -68,14 +115,13 @@
       <option value="BRImo">BRImo</option>
     </select>
 
-    <input type="text" id="nowa" placeholder="No WhatsApp (angka saja)">
+    <div id="rekeningInfo"></div>
+
+    <p>Total: <span id="totalHarga">0</span></p>
+
     <button onclick="kirimPesan()">Kirim Pesanan</button>
 
-    <div id="loading" style="display:none; margin-top:15px;">
-      <img src="https://i.gifer.com/YCZH.gif" width="50">
-      <p>Pesanan sedang diproses...</p>
-    </div>
-    <div id="notifikasi" style="margin-top:10px;"></div>
+    <div id="prosesPesan">Pesanan sedang dicek dan diproses...</div>
   </div>
 
   <script>
@@ -84,20 +130,36 @@
       jual: 2450
     };
 
+    const rekening = {
+      Dana: "083821103983",
+      Gopay: "085232443263",
+      Seabank: "901546407976",
+      Mandiri: "1060018413875",
+      BRImo: "0051 0126 8017 503"
+    };
+
     function hitungTotal() {
       const tipe = document.getElementById('tipe').value;
       const jumlah = parseInt(document.getElementById('jumlah').value);
-      if (!tipe || !jumlah) {
-        document.getElementById('totalHarga').innerText = '-';
-        return;
+      const total = (!tipe || !jumlah) ? 0 : jumlah * harga[tipe];
+      document.getElementById('totalHarga').innerText = total;
+    }
+
+    function tampilkanRek() {
+      const metode = document.getElementById("metode").value;
+      const info = rekening[metode] ? `No Rekening (${metode}): ${rekening[metode]}` : "";
+      const rekeningInfo = document.getElementById("rekeningInfo");
+
+      rekeningInfo.classList.remove("show");
+      rekeningInfo.innerText = info;
+      if (info) {
+        setTimeout(() => rekeningInfo.classList.add("show"), 50);
       }
-      const total = jumlah * harga[tipe];
-      document.getElementById('totalHarga').innerText = 'Rp ' + total.toLocaleString('id-ID');
     }
 
     function kirimPesan() {
       const tipe = document.getElementById('tipe').value;
-      const jumlah = parseInt(document.getElementById('jumlah').value);
+      const jumlah = document.getElementById('jumlah').value;
       const growid = document.getElementById('growid').value;
       const world = document.getElementById('world').value;
       const metode = document.getElementById('metode').value;
@@ -111,25 +173,19 @@
         return alert("No WA hanya boleh angka!");
       }
 
-      const total = jumlah * harga[tipe];
-      const pesan = `Halo Admin,%0ATransaksi: ${tipe.toUpperCase()}%0AJumlah: ${jumlah} DL%0AGrowID: ${growid}%0AWorld: ${world}%0APembayaran: ${metode}%0ANo WA: ${nowa}%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
+      document.getElementById("prosesPesan").style.display = "block";
 
-      const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=6285232443263&apikey=5579908&text=${pesan}`;
-
-      document.getElementById("loading").style.display = "block";
-      document.getElementById("notifikasi").innerText = "";
-
-      fetch(apiUrl)
+      // WA API Call (CallMeBot)
+      const pesan = `Halo Admin, saya ingin *${tipe} DL*\nJumlah: ${jumlah}\nGrowID: ${growid}\nWorld: ${world}\nMetode: ${metode}\nWA: ${nowa}\nTotal: ${jumlah * harga[tipe]}`;
+      const encoded = encodeURIComponent(pesan);
+      fetch(`https://api.callmebot.com/whatsapp.php?phone=085232443263&text=${encoded}&apikey=5579908`)
         .then(() => {
-          document.getElementById("loading").style.display = "none";
-          document.getElementById("notifikasi").innerText = "Pesanan berhasil dikirim ke WhatsApp Admin!";
+          alert("Pesanan berhasil dikirim!");
         })
         .catch(() => {
-          document.getElementById("loading").style.display = "none";
-          document.getElementById("notifikasi").innerText = "Gagal mengirim pesan ke WhatsApp.";
+          alert("Gagal mengirim pesan ke admin.");
         });
     }
   </script>
-
 </body>
 </html>
