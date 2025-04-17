@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pesanan | DesaDL</title>
+  <title>Growtopia | DesaDL</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -52,8 +52,12 @@
       color: white;
       border-radius: 6px;
       cursor: pointer;
+      transition: 0.3s;
     }
-    #result {
+    button:hover {
+      background: #0056b3;
+    }
+    #result, #harga, #pembayaranInfo {
       margin-top: 20px;
       font-style: italic;
       text-align: center;
@@ -92,18 +96,34 @@
   <div class="toggle" onclick="toggleDark()">🌙</div>
   <div class="container">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Logo_Desa.svg/512px-Logo_Desa.svg.png" alt="Logo DesaDL" class="logo">
-    <h1>DesaDL Official</h1>
+    <h1>Growtopia | DesaDL</h1>
+
+    <label>Tipe Transaksi:</label>
+    <select id="tipe" onchange="updateHarga()">
+      <option value="">Pilih</option>
+      <option value="jual">Jual WL ke User (Rp 2.600)</option>
+      <option value="beli">Beli WL dari User (Rp 2.450)</option>
+    </select>
+
+    <label>Jumlah WL:</label>
+    <input type="number" id="jumlah" oninput="updateHarga()">
+
+    <div id="harga"></div>
 
     <label>Nama Pemesan:</label>
     <input type="text" id="nama">
 
     <label>Metode Pembayaran:</label>
-    <select id="pembayaran">
+    <select id="pembayaran" onchange="updatePembayaranInfo()">
       <option value="">Pilih Metode</option>
       <option value="Dana">Dana</option>
       <option value="Gopay">Gopay</option>
-      <option value="OVO">OVO</option>
+      <option value="Seabank">Seabank</option>
+      <option value="Mandiri">Bank Mandiri</option>
+      <option value="BRImo">Bank BRImo</option>
     </select>
+
+    <div id="pembayaranInfo"></div>
 
     <label>Bukti Transfer (Upload):</label>
     <input type="file" id="bukti">
@@ -117,18 +137,45 @@
   </div>
 
   <script>
+    const nomorPembayaran = {
+      "Dana": "083821103983",
+      "Gopay": "085232443263",
+      "Seabank": "901546407976",
+      "Mandiri": "1060018413875",
+      "BRImo": "0051 0126 8017 503"
+    };
+
     function toggleDark() {
       document.body.classList.toggle("dark");
       document.querySelector('.toggle').textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    }
+
+    function updatePembayaranInfo() {
+      const metode = document.getElementById('pembayaran').value;
+      const info = nomorPembayaran[metode] || "";
+      document.getElementById('pembayaranInfo').innerText = info ? `Nomor pembayaran: ${info}` : "";
+    }
+
+    function updateHarga() {
+      const tipe = document.getElementById('tipe').value;
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+      let harga = 0;
+
+      if (tipe === 'jual') harga = jumlah * 2600;
+      if (tipe === 'beli') harga = jumlah * 2450;
+
+      document.getElementById('harga').innerText = jumlah ? `Total: Rp ${harga.toLocaleString('id-ID')}` : "";
     }
 
     function kirimPesanan() {
       const nama = document.getElementById('nama').value;
       const metode = document.getElementById('pembayaran').value;
       const bukti = document.getElementById('bukti').files.length;
+      const tipe = document.getElementById('tipe').value;
+      const jumlah = document.getElementById('jumlah').value;
 
-      if (!nama || !metode || !bukti) {
-        alert("Nama, metode pembayaran & bukti transfer wajib diisi!");
+      if (!nama || !metode || !bukti || !tipe || !jumlah) {
+        alert("Semua data wajib diisi!");
         return;
       }
 
@@ -137,8 +184,13 @@
 
       setTimeout(() => {
         document.getElementById('result').innerText = "Pembayaran dikonfirmasi. Pesanan segera dikirim!";
-        // Simulasi WA redirect (ganti nomor WA admin di bawah)
-        window.open('https://wa.me/6281234567890?text=Halo%20admin,%20saya%20sudah%20melakukan%20pembayaran%20a.n%20' + encodeURIComponent(nama), '_blank');
+
+        // Simulasi WhatsApp Gateway (ganti URL endpoint asli kalau ada)
+        fetch(`https://api-wa.fakeurl/send?apikey=5579908&pesan=Halo Admin, ${nama} telah ${tipe} ${jumlah} WL via ${metode}`)
+          .then(() => console.log("Pesan WA dikirim!"))
+          .catch(() => console.warn("Simulasi API gagal (endpoint tidak asli)"));
+
+        window.open(`https://wa.me/6281234567890?text=Halo admin, saya ${nama} telah melakukan ${tipe} ${jumlah} WL`, '_blank');
       }, 5000);
     }
   </script>
