@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Growtopia | DesaDL</title>
+  <title>Transaksi DL | DesaDL</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -96,19 +96,25 @@
   <div class="toggle" onclick="toggleDark()">🌙</div>
   <div class="container">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Logo_Desa.svg/512px-Logo_Desa.svg.png" alt="Logo DesaDL" class="logo">
-    <h1>Growtopia | DesaDL</h1>
+    <h1>Transaksi Diamond Lock (DL)</h1>
 
     <label>Tipe Transaksi:</label>
     <select id="tipe" onchange="updateHarga()">
       <option value="">Pilih</option>
-      <option value="jual">Jual WL ke User (Rp 2.600)</option>
-      <option value="beli">Beli WL dari User (Rp 2.450)</option>
+      <option value="jual">Jual DL ke User (Rp 2.600)</option>
+      <option value="beli">Beli DL dari User (Rp 2.450)</option>
     </select>
 
-    <label>Jumlah WL:</label>
+    <label>Jumlah DL:</label>
     <input type="number" id="jumlah" oninput="updateHarga()">
 
     <div id="harga"></div>
+
+    <label>Nama Growtopia:</label>
+    <input type="text" id="growid">
+
+    <label>Nama World:</label>
+    <input type="text" id="world">
 
     <label>Nama Pemesan:</label>
     <input type="text" id="nama">
@@ -173,24 +179,27 @@
       const bukti = document.getElementById('bukti').files.length;
       const tipe = document.getElementById('tipe').value;
       const jumlah = document.getElementById('jumlah').value;
+      const growid = document.getElementById('growid').value;
+      const world = document.getElementById('world').value;
 
-      if (!nama || !metode || !bukti || !tipe || !jumlah) {
+      if (!nama || !metode || !bukti || !tipe || !jumlah || !growid || !world) {
         alert("Semua data wajib diisi!");
         return;
       }
 
-      document.getElementById('result').innerText = "Pesanan kamu sedang dicek, mohon tunggu 5 menit...";
+      const harga = tipe === 'jual' ? jumlah * 2600 : jumlah * 2450;
+
+      document.getElementById('result').innerText = "Pesanan kamu sedang dicek, mohon tunggu...";
       document.getElementById('progress').style.display = 'block';
 
+      const pesan = `Halo admin,\n\nNama: ${nama}\nTipe: ${tipe.toUpperCase()}\nJumlah: ${jumlah} DL\nGrowID: ${growid}\nWorld: ${world}\nPembayaran via: ${metode}\nTotal: Rp ${harga.toLocaleString('id-ID')}`;
+
       setTimeout(() => {
+        fetch(`https://api.callmebot.com/whatsapp.php?phone=6285232443263&apikey=5579908&text=${encodeURIComponent(pesan)}`)
+          .then(() => console.log("Notifikasi WA dikirim!"))
+          .catch(() => console.warn("Gagal kirim WA (simulasi)"));        
+
         document.getElementById('result').innerText = "Pembayaran dikonfirmasi. Pesanan segera dikirim!";
-
-        // Simulasi WhatsApp Gateway (ganti URL endpoint asli kalau ada)
-        fetch(`https://api-wa.fakeurl/send?apikey=5579908&pesan=Halo Admin, ${nama} telah ${tipe} ${jumlah} WL via ${metode}`)
-          .then(() => console.log("Pesan WA dikirim!"))
-          .catch(() => console.warn("Simulasi API gagal (endpoint tidak asli)"));
-
-        window.open(`https://wa.me/6281234567890?text=Halo admin, saya ${nama} telah melakukan ${tipe} ${jumlah} WL`, '_blank');
       }, 5000);
     }
   </script>
