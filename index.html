@@ -24,6 +24,7 @@
       border-radius: 12px;
       background: #fff;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
     }
     .dark .container {
       background: #1e1e1e;
@@ -64,12 +65,35 @@
       cursor: pointer;
       font-size: 20px;
     }
+    .logo {
+      display: block;
+      margin: 0 auto 20px;
+      max-width: 120px;
+    }
+    .progress {
+      margin-top: 15px;
+      width: 100%;
+      background: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 10px;
+      width: 0;
+      background: #28a745;
+      animation: progressAnim 5s forwards;
+    }
+    @keyframes progressAnim {
+      to { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <div class="toggle" onclick="toggleDark()">🌙</div>
   <div class="container">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Logo_Desa.svg/512px-Logo_Desa.svg.png" alt="Logo DesaDL" class="logo">
     <h1>DesaDL Official</h1>
+
     <label>Nama Pemesan:</label>
     <input type="text" id="nama">
 
@@ -87,6 +111,9 @@
     <button onclick="kirimPesanan()">Kirim Pesanan</button>
 
     <div id="result"></div>
+    <div class="progress" id="progress" style="display:none;">
+      <div class="progress-bar"></div>
+    </div>
   </div>
 
   <script>
@@ -106,6 +133,13 @@
       }
 
       document.getElementById('result').innerText = "Pesanan kamu sedang dicek, mohon tunggu 5 menit...";
+      document.getElementById('progress').style.display = 'block';
+
+      setTimeout(() => {
+        document.getElementById('result').innerText = "Pembayaran dikonfirmasi. Pesanan segera dikirim!";
+        // Simulasi WA redirect (ganti nomor WA admin di bawah)
+        window.open('https://wa.me/6281234567890?text=Halo%20admin,%20saya%20sudah%20melakukan%20pembayaran%20a.n%20' + encodeURIComponent(nama), '_blank');
+      }, 5000);
     }
   </script>
 </body>
